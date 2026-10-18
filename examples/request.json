@@ -1,0 +1,28 @@
+{
+  "transactions": [
+    {
+      "id": "s0",
+      "source_account_id": "payer",
+      "destination_account_id": "payee0",
+      "amount": "4000.00",
+      "currency": "BRL",
+      "occurred_at": "2026-01-01T11:00:00Z"
+    },
+    {
+      "id": "s1",
+      "source_account_id": "payer",
+      "destination_account_id": "payee1",
+      "amount": "4000.00",
+      "currency": "BRL",
+      "occurred_at": "2026-01-01T11:10:00Z"
+    },
+    {
+      "id": "s2",
+      "source_account_id": "payer",
+      "destination_account_id": "payee2",
+      "amount": "4000.00",
+      "currency": "BRL",
+      "occurred_at": "2026-01-01T11:20:00Z"
+    }
+  ]
+}

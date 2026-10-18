@@ -1,15 +1,30 @@
 # OR SplitShield
 
-Motor de detecção de fracionamento de transações (structuring/smurfing) em janelas móveis, com evidências reproduzíveis.
+Explainable rolling-window indicators for transaction structuring or smurfing hypotheses.
 
-## MVP
+## Why it matters
 
-- Agrupar operações por cliente, conta, canal e contraparte.
-- Avaliar quantidade, soma, proximidade de limite e intervalo temporal.
-- Detectar depósitos, saques e transferências fragmentadas.
-- Explicar cada alerta com regra, janela e transações relacionadas.
+Repeated sub-threshold transfers can be missed when each payment is reviewed separately. This project groups activity by source account and currency, applies a bounded rolling window, and returns the exact evidence behind every alert.
 
-## Próximo passo
+## Current capabilities
 
-O pacote já detecta fracionamento por conta em janela configurável e devolve as transações de evidência. Próximo: adicionar regras por canal/contraparte e uma API.
+- Configurable threshold, minimum count, and time window.
+- Exact decimal arithmetic and strict rejection of floating-point money.
+- Currency isolation and stable evidence-linked alert IDs.
+- Deterministic processing and disjoint evidence sets.
+- Human-readable explanations and versioned rules.
+- CLI, optional authenticated API, Docker image, and CI.
 
+## Run
+
+```sh
+python -m pip install -e '.[dev,api]'
+python -m or_splitshield --demo
+pytest -q && ruff check src tests
+```
+
+API: set `OR_API_KEY` to at least 16 characters, run `uvicorn or_splitshield.api:create_app --factory`, then POST `examples/request.json` to `/v1/analyze`.
+
+## Limitations and roadmap
+
+Thresholds are demonstration settings, not regulatory advice. The prototype has no customer segmentation, channel logic, linked-account aggregation, event-time streaming, threshold governance, or false-positive measurement. Next steps are policy packs, cohort-specific thresholds, late-event handling, counterparty and channel dimensions, feedback capture, and regression datasets.

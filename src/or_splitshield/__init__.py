@@ -1,15 +1,15 @@
-"""Starter package for OR SplitShield."""
+"""Public API for OR SplitShield."""
 
 from .detector import detect_structuring
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 
 def project_info() -> dict[str, str]:
     return {
         "name": "OR SplitShield",
         "focus": "Explainable transaction-structuring detection",
-        "status": "starter",
+        "status": "reference-prototype",
     }
 
 

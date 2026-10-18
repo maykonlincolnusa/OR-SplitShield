@@ -1,44 +1,47 @@
-"""Small, explainable detector for transaction structuring."""
-
+"""Currency-isolated rolling-window structuring indicators."""
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import timedelta
 from decimal import Decimal
+from hashlib import sha256
+
+from .validation import instant, integer, money, transactions
+
+RULE_VERSION = "2.0"
 
 
-def detect_structuring(
-    transactions: list[dict[str, object]],
-    threshold: str = "10000",
-    min_count: int = 3,
-    window_minutes: int = 60,
-) -> list[dict[str, object]]:
-    grouped: dict[str, list[dict[str, object]]] = defaultdict(list)
-    limit = Decimal(threshold)
-    for transaction in transactions:
-        if Decimal(str(transaction["amount"])) < limit:
-            grouped[str(transaction["source_account_id"])].append(transaction)
-
-    alerts: list[dict[str, object]] = []
-    window = timedelta(minutes=window_minutes)
-    for account_id, rows in grouped.items():
-        ordered = sorted(rows, key=lambda row: str(row["occurred_at"]))
-        for start in range(len(ordered)):
-            first_time = datetime.fromisoformat(str(ordered[start]["occurred_at"]))
-            selected = []
-            for row in ordered[start:]:
-                if datetime.fromisoformat(str(row["occurred_at"])) - first_time <= window:
-                    selected.append(row)
-            total = sum((Decimal(str(row["amount"])) for row in selected), Decimal("0"))
-            if len(selected) >= min_count and total >= limit:
-                alerts.append(
-                    {
-                        "account_id": account_id,
-                        "rule": "STRUCTURING_WINDOW",
-                        "transaction_ids": [str(row["id"]) for row in selected],
-                        "total": str(total),
-                    }
-                )
-                break
+def detect_structuring(transactions_input, threshold="10000", min_count=3, window_minutes=60):
+    limit = money(threshold, "threshold")
+    integer(min_count, "min_count", 2)
+    integer(window_minutes, "window_minutes", 1, 10080)
+    grouped = defaultdict(list)
+    for row in transactions(transactions_input):
+        if Decimal(row["amount"]) < limit:
+            grouped[(row["source_account_id"], row["currency"])].append(row)
+    alerts = []
+    for (account, unit), rows in sorted(grouped.items()):
+        left = 0
+        total = Decimal("0")
+        for right, row in enumerate(rows):
+            total += Decimal(row["amount"])
+            while instant(row["occurred_at"]) - instant(rows[left]["occurred_at"]) > timedelta(minutes=window_minutes):
+                total -= Decimal(rows[left]["amount"])
+                left += 1
+            if right - left + 1 >= min_count and total >= limit:
+                selected = rows[left:right + 1]
+                ids = [item["id"] for item in selected]
+                identity = sha256(repr((account, unit, ids, threshold, min_count, window_minutes)).encode()).hexdigest()[:20]
+                alerts.append({
+                    "id": "split-" + identity, "account_id": account, "currency": unit,
+                    "rule": "STRUCTURING_WINDOW", "rule_version": RULE_VERSION,
+                    "transaction_ids": ids, "total": format(total, "f"),
+                    "window_start": selected[0]["occurred_at"],
+                    "window_end": selected[-1]["occurred_at"],
+                    "explanation": f"{len(ids)} sub-threshold transfers reach {threshold} {unit} within {window_minutes} minutes.",
+                })
+                # Emit disjoint evidence sets; subsequent activity can create another alert.
+                left = right + 1
+                total = Decimal("0")
     return alerts
 
