@@ -1,8 +1,9 @@
 """Public API for OR SplitShield."""
 
 from .detector import detect_structuring
+from .linked import detect_linked_structuring
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 
 def project_info() -> dict[str, str]:
@@ -13,5 +14,5 @@ def project_info() -> dict[str, str]:
     }
 
 
-__all__ = ["detect_structuring", "project_info"]
+__all__ = ["detect_linked_structuring", "detect_structuring", "project_info"]
 

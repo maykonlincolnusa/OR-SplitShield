@@ -13,6 +13,7 @@ Repeated sub-threshold transfers can be missed when each payment is reviewed sep
 - Currency isolation and stable evidence-linked alert IDs.
 - Deterministic processing and disjoint evidence sets.
 - Human-readable explanations and versioned rules.
+- Entity-level aggregation across explicitly mapped accounts, excluding internal transfers.
 - CLI, optional authenticated API, Docker image, and CI.
 
 ## Run
@@ -27,4 +28,4 @@ API: set `OR_API_KEY` to at least 16 characters, run `uvicorn or_splitshield.api
 
 ## Limitations and roadmap
 
-Thresholds are demonstration settings, not regulatory advice. The prototype has no customer segmentation, channel logic, linked-account aggregation, event-time streaming, threshold governance, or false-positive measurement. Next steps are policy packs, cohort-specific thresholds, late-event handling, counterparty and channel dimensions, feedback capture, and regression datasets.
+Set `action` to `linked` and supply reviewed account-to-entity mappings for linked-account analysis. Thresholds are demonstration settings, not regulatory advice. The prototype has no customer segmentation, channel logic, event-time streaming, threshold governance, or false-positive measurement. Next steps are policy packs, cohort-specific thresholds, late-event handling, counterparty and channel dimensions, and feedback capture.

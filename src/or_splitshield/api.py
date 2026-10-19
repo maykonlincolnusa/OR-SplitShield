@@ -21,7 +21,7 @@ def create_app(api_key=None):
     key = api_key if api_key is not None else os.getenv("OR_API_KEY", "")
     if not isinstance(key, str) or len(key) < 16:
         raise RuntimeError("OR_API_KEY must contain at least 16 characters")
-    app = FastAPI(title=__package__, version="0.2.0")
+    app = FastAPI(title=__package__, version="0.3.0")
     header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
     def authorize(supplied=Depends(header)):
